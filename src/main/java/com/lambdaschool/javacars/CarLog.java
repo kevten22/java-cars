@@ -9,7 +9,7 @@ public class CarLog implements Serializable {
     private final String text;
     private final String formattedDate;
 
-    public CarLog(String text){
+    public CarLog(String text) {
         this.text = text;
         Date date = new Date();
         String strDateFormat = "yyyy-MM-dd hh:mm:ss a";

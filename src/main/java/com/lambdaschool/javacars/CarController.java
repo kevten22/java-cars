@@ -1,5 +1,7 @@
 package com.lambdaschool.javacars;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.ResponseEntity;
@@ -34,20 +36,25 @@ public class CarController {
 
         CarLog message = new CarLog("Data Loaded");
         rt.convertAndSend(JavaCarsApplication.QUEUE_NAME, message.toString());
-        log.info("Message Sent");
+        log.info("Data loaded");
 
         return carrepos.saveAll(newCars);
     }
 
     @DeleteMapping("/cars/delete/{id}")
-    public ResponseEntity<?> deleteEmployee(@PathVariable Long id)
+    public ObjectNode deleteEmployee(@PathVariable Long id)
     {
         carrepos.deleteById(id);
 
-        CarLog message = new CarLog("{id} Data deleted");
-        rt.convertAndSend(JavaCarsApplication.QUEUE_NAME, message.toString());
-        log.info("Message Sent");
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode deleted = mapper.createObjectNode();
+        deleted.put("id", id);
 
-        return ResponseEntity.noContent().build();
+
+        CarLog message = new CarLog("Deleted car");
+        rt.convertAndSend(JavaCarsApplication.QUEUE_NAME, message.toString());
+        log.info("{} Data deleted", id);
+
+        return deleted;
     }
 }
