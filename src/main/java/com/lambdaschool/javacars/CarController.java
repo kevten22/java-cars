@@ -7,6 +7,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -29,6 +30,22 @@ public class CarController {
     public Car findOne(@PathVariable Long id){
         return carrepos.findById(id)
                 .orElseThrow(()-> new CarNotFoundException(id));
+    }
+
+    @GetMapping("/cars/year/{year}")
+    public List<Car> findAllByYear(@PathVariable int year){
+
+         return carrepos.findAllByYear(year);
+    }
+
+    @GetMapping("/cars/brand/{brand}")
+    public List<Car> findAllByBrand(@PathVariable String brand){
+
+        CarLog message = new CarLog("Searching for car by brand");
+        rt.convertAndSend(JavaCarsApplication.QUEUE_NAME, message.toString());
+        log.info("Search for {}", brand);
+
+        return carrepos.findAllByBrandIgnoreCase(brand);
     }
 
     @PostMapping("/cars/upload")
