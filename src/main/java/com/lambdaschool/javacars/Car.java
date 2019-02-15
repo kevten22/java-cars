@@ -10,15 +10,17 @@ import javax.persistence.Id;
 @Entity
 public class Car {
     private @Id @GeneratedValue Long id;
-    private String language;
-    private Long population;
+    private int year;
+    private String brand;
+    private String model;
 
     public Car(){
 
     }
 
-    public Car(String language, Long population) {
-        this.language = language;
-        this.population = population;
+    public Car(int year, String brand, String model) {
+        this.year = year;
+        this.brand = brand;
+        this.model = model;
     }
 }

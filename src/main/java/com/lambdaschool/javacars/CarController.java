@@ -2,10 +2,8 @@ package com.lambdaschool.javacars;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -16,7 +14,7 @@ public class CarController {
     private final RabbitTemplate rt;
 
     public CarController(CarRepository carrepos, RabbitTemplate rt){
-        this.carrepos;
+        this.carrepos = carrepos;
         this.rt = rt;
     }
 
@@ -25,8 +23,31 @@ public class CarController {
         return carrepos.findAll();
     }
 
+    @GetMapping("/cars/id/{id}")
+    public Car findOne(@PathVariable Long id){
+        return carrepos.findById(id)
+                .orElseThrow(()-> new CarNotFoundException(id));
+    }
+
     @PostMapping("/cars/upload")
     public List<Car> newCar(@RequestBody List<Car> newCars){
+
+        CarLog message = new CarLog("Data Loaded");
+        rt.convertAndSend(JavaCarsApplication.QUEUE_NAME, message.toString());
+        log.info("Message Sent");
+
         return carrepos.saveAll(newCars);
+    }
+
+    @DeleteMapping("/cars/delete/{id}")
+    public ResponseEntity<?> deleteEmployee(@PathVariable Long id)
+    {
+        carrepos.deleteById(id);
+
+        CarLog message = new CarLog("{id} Data deleted");
+        rt.convertAndSend(JavaCarsApplication.QUEUE_NAME, message.toString());
+        log.info("Message Sent");
+
+        return ResponseEntity.noContent().build();
     }
 }
